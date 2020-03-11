@@ -72,7 +72,7 @@ namespace UserManagement
 
         }
 
-        public async Task<bool> FindOneAsync(string username)
+        /*public async Task<bool> FindOneAsync(string username)
         {
             using var cmd = Db.Connection.CreateCommand();
             cmd.CommandText = @"SELECT user_id FROM user WHERE username = @username";
@@ -85,7 +85,7 @@ namespace UserManagement
             var result = await cmd.ExecuteReaderAsync();
             return await result.ReadAsync();
         }
-
+        */
         public async Task<int> DeleteAsync()
         {
             using var cmd = Db.Connection.CreateCommand();
@@ -96,20 +96,29 @@ namespace UserManagement
             await cmd.ExecuteNonQueryAsync();
             return 1;
         }
-        public async Task<List<User>> GetAllUsersAsync()
+        public async Task<List<Object>> GetAllUsersAsync()
         {
             using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"SELECT `first_name`,`middle_name`,`last_name`,`email`,`username`  FROM `user`";
+            cmd.CommandText = @"SELECT `first_name`,`middle_name`,`last_name`,`email`,`username`  FROM `user` where `is_active`=1";
             return await ReadAllAsync(await cmd.ExecuteReaderAsync());
         }
-        private async Task<List<User>> ReadAllAsync(DbDataReader reader)
+
+         public async Task UpdateAsync()
+          {
+              using var cmd = Db.Connection.CreateCommand();
+              cmd.CommandText = @"UPDATE `user` SET `is_active`=0 WHERE `username` = @username;";
+              BindUsername(cmd);
+              await cmd.ExecuteNonQueryAsync();
+          }
+
+        private async Task<List<Object>> ReadAllAsync(DbDataReader reader)
         {
-            var posts = new List<User>();
+            var posts = new List<Object>();
             using (reader)
             {
                 while (await reader.ReadAsync())
                 {
-                    var post = new User(Db)
+                    var post = new 
                     {
                         //  Id = reader.GetInt32(0),
                         FirstName = reader.GetString(0),

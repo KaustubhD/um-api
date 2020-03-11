@@ -13,6 +13,7 @@ namespace UserManagement.Controllers
         }
 
         [HttpGet]
+        [Route("all")]
         public async Task<IActionResult> GetAllUsers()
         {
             await Db.Connection.OpenAsync();
@@ -22,6 +23,7 @@ namespace UserManagement.Controllers
         }
 
         [HttpPost]
+        [Route("add")]
         public async Task<IActionResult> Post([FromBody]User body)
         {
             await Db.Connection.OpenAsync();
@@ -31,7 +33,8 @@ namespace UserManagement.Controllers
 
             // return Ok();
         }
-        [HttpPost("/addAll")]
+        [HttpPost]
+        [Route("addAll")]
         public async Task<IActionResult> Post([FromBody]MultipleUsers body)
         {
             await Db.Connection.OpenAsync();
@@ -42,7 +45,21 @@ namespace UserManagement.Controllers
 
             // return Ok();
         }
-        [HttpDelete("{username}")]
+
+        // [HttpPut]
+        
+        [Route("{username}/inactive")]
+        public async Task<IActionResult> PutOne(string username)
+        {
+            await Db.Connection.OpenAsync();
+            var query = new User(Db);
+             query.UserName = username;
+            await query.UpdateAsync();
+            return Ok();
+        }
+        
+        //[HttpDelete]
+        [Route("{username}/remove")]
         public async Task<IActionResult> DeleteOne(string username)
         {
             await Db.Connection.OpenAsync();
