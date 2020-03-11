@@ -16,9 +16,10 @@ namespace UserManagement.Controllers
         [Route("all")]
         public async Task<IActionResult> GetAllUsers()
         {
-            await Db.Connection.OpenAsync();
+            Db.Connection.Open();
             var query = new User(Db);
-            var result = await query.GetAllUsersAsync();
+            var result = query.GetAllUsers();
+            Db.Connection.Close();
             return new OkObjectResult(result);
         }
 
@@ -26,9 +27,10 @@ namespace UserManagement.Controllers
         [Route("add")]
         public async Task<IActionResult> Post([FromBody]User body)
         {
-            await Db.Connection.OpenAsync();
+            Db.Connection.Open();
             body.Db = Db;
-            var result = await body.AddOneUser();
+            var result = body.AddOneUser();
+            Db.Connection.Close();
             return new OkObjectResult(result);
 
             // return Ok();
@@ -37,9 +39,9 @@ namespace UserManagement.Controllers
         [Route("addAll")]
         public async Task<IActionResult> Post([FromBody]MultipleUsers body)
         {
-            await Db.Connection.OpenAsync();
+            Db.Connection.Open();
             body.Db = Db;
-            await body.AddAllUsers();
+            body.AddAllUsers();
             Db.Connection.Close();
             return Ok();
 
@@ -49,12 +51,12 @@ namespace UserManagement.Controllers
         // [HttpPut]
         
         [Route("{username}/inactive")]
-        public async Task<IActionResult> PutOne(string username)
+        public async  Task<IActionResult> PutOne(string username)
         {
-            await Db.Connection.OpenAsync();
+            Db.Connection.Open();
             var query = new User(Db);
-             query.UserName = username;
-            await query.UpdateAsync();
+            query.UserName = username;
+            query.Update();
             return Ok();
         }
         
@@ -62,7 +64,7 @@ namespace UserManagement.Controllers
         [Route("{username}/remove")]
         public async Task<IActionResult> DeleteOne(string username)
         {
-            await Db.Connection.OpenAsync();
+            Db.Connection.Open();
             User query = new User(Db);
             query.UserName = username;
             /*
@@ -70,7 +72,7 @@ namespace UserManagement.Controllers
             if (!result)
                 return new NotFoundResult();
             */
-            await query.DeleteAsync();
+            query.Delete();
             Db.Connection.Close();
             return new OkResult();
         }

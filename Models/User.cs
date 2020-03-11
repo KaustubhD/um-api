@@ -53,7 +53,7 @@ namespace UserManagement
         {
             Db = db;
         }
-        public async Task<string> AddOneUser()
+        public string AddOneUser()
         {
             using var cmd = Db.Connection.CreateCommand();
             cmd.CommandText = "insert_user_data";
@@ -65,7 +65,7 @@ namespace UserManagement
             };
             cmd.Parameters.Add(outputEmailParam);
             //cmd.Connection.Open();
-            await cmd.ExecuteNonQueryAsync();
+            cmd.ExecuteNonQuery();
             System.Diagnostics.Debug.WriteLine("ABCDE----------------------------------------");
             //cmd.Connection.Close();
             return (string)outputEmailParam.Value;
@@ -86,37 +86,37 @@ namespace UserManagement
             return await result.ReadAsync();
         }
         */
-        public async Task<int> DeleteAsync()
+        public int Delete()
         {
             using var cmd = Db.Connection.CreateCommand();
             cmd.CommandText = "delete_user";
             cmd.CommandType = CommandType.StoredProcedure;
             BindUsername(cmd);
             
-            await cmd.ExecuteNonQueryAsync();
+            cmd.ExecuteNonQuery();
             return 1;
         }
-        public async Task<List<Object>> GetAllUsersAsync()
+        public List<Object> GetAllUsers()
         {
             using var cmd = Db.Connection.CreateCommand();
             cmd.CommandText = @"SELECT `first_name`,`middle_name`,`last_name`,`email`,`username`  FROM `user` where `is_active`=1";
-            return await ReadAllAsync(await cmd.ExecuteReaderAsync());
+            return ReadAll(cmd.ExecuteReader());
         }
 
-         public async Task UpdateAsync()
+         public void Update()
           {
               using var cmd = Db.Connection.CreateCommand();
               cmd.CommandText = @"UPDATE `user` SET `is_active`=0 WHERE `username` = @username;";
               BindUsername(cmd);
-              await cmd.ExecuteNonQueryAsync();
+              cmd.ExecuteNonQuery();
           }
 
-        private async Task<List<Object>> ReadAllAsync(DbDataReader reader)
+        private List<Object> ReadAll(DbDataReader reader)
         {
             var posts = new List<Object>();
             using (reader)
             {
-                while (await reader.ReadAsync())
+                while (reader.Read())
                 {
                     var post = new 
                     {

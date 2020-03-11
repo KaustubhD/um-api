@@ -20,7 +20,7 @@ namespace UserManagement
         {
             Db = db;
         }
-        public async Task AddAllUsers()
+        public void AddAllUsers()
         {
             for(int i = 0; i < users.Length; i++){
                 users[i].AddOneUser();

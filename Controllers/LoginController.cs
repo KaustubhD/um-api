@@ -12,9 +12,9 @@ namespace UserManagement.Controllers{
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]Login body){
-            await Db.Connection.OpenAsync();
+            Db.Connection.Open();
             body.Db = Db;
-            var result = await body.checkAuth();
+            var result = body.checkAuth();
             //if(result == null){
             //    Context.Response.StatusCode = (int)System.Net.HttpStatusCode.Forbidden;
             //    Context.Response.End();

@@ -24,7 +24,7 @@ namespace UserManagement
         {
             Db = db;
         }
-        public async Task<string> checkAuth(){
+        public string checkAuth(){
             using var cmd = Db.Connection.CreateCommand();
             
             // MySqlCommand cmd = new MySqlCommand("login", connection);
@@ -36,7 +36,7 @@ namespace UserManagement
                 Direction = ParameterDirection.Output
             };
             cmd.Parameters.Add(outputEmailParam);
-            await cmd.ExecuteNonQueryAsync();
+            cmd.ExecuteNonQuery();
             string value = (string)outputEmailParam.Value;
             string value1 = value;
             System.Diagnostics.Debug.WriteLine("ABCDE----------------------------------------");
