@@ -37,20 +37,24 @@ namespace UserManagement.Controllers
             await Db.Connection.OpenAsync();
             body.Db = Db;
             await body.AddAllUsers();
+            Db.Connection.Close();
             return Ok();
 
             // return Ok();
         }
-        [HttpDelete("{username}/remove")]
+        [HttpDelete("{username}")]
         public async Task<IActionResult> DeleteOne(string username)
         {
             await Db.Connection.OpenAsync();
             User query = new User(Db);
             query.UserName = username;
+            /*
             var result = await query.FindOneAsync(username);
             if (!result)
                 return new NotFoundResult();
+            */
             await query.DeleteAsync();
+            Db.Connection.Close();
             return new OkResult();
         }
         public AppDb Db { get; }

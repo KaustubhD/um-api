@@ -83,10 +83,10 @@ namespace UserManagement
                 Value = username
             });
             var result = await cmd.ExecuteReaderAsync();
-            return result.Read();
+            return await result.ReadAsync();
         }
 
-        public async Task DeleteAsync()
+        public async Task<int> DeleteAsync()
         {
             using var cmd = Db.Connection.CreateCommand();
             cmd.CommandText = "delete_user";
@@ -94,6 +94,7 @@ namespace UserManagement
             BindUsername(cmd);
             
             await cmd.ExecuteNonQueryAsync();
+            return 1;
         }
         public async Task<List<User>> GetAllUsersAsync()
         {
