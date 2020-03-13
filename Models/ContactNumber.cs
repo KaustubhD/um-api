@@ -4,23 +4,24 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
-namespace UserManagement
+namespace UserManagement.Models
 {
-    public class ContactNumber
+    public class ContactNumberModel
     {
         public string ContactNumberType { get; set; }
         public string Number { get; set; }
-        public string CountryId { get; set; }
+        public string CountryCode { get; set; }
+        public string AreaCode { get; set; }
         
         
 
         internal AppDb Db { get; set; }
 
-        public ContactNumber()
+        public ContactNumberModel()
         {
         }
 
-        internal ContactNumber(AppDb db)
+        internal ContactNumberModel(AppDb db)
         {
             Db = db;
         }
@@ -38,6 +39,12 @@ namespace UserManagement
             */
 
         }
-
+        public void BindParams(MySqlCommand cmd)
+        {
+            cmd.Parameters.Add(new MySqlParameter("ph_num_type", ContactNumberType));
+            System.Diagnostics.Debug.WriteLine(ContactNumberType);
+            cmd.Parameters.Add(new MySqlParameter("ph_number", Number));
+            cmd.Parameters.Add(new MySqlParameter("ph_ext", AreaCode));
+        }
     }
 }

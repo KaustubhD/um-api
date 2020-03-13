@@ -4,23 +4,24 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
-namespace UserManagement
+namespace UserManagement.Models
 {
-    public class Address
+    public class AddressModel
     {
         public string AddressType { get; set; }
         public string AddressLine { get; set; }
         public string City { get; set; }
         public string State { get; set; }
         public string Country { get; set; }
+        public string PIN { get; set; }
 
         internal AppDb Db { get; set; }
 
-        public Address()
+        public AddressModel()
         {
         }
 
-        internal Address(AppDb db)
+        internal AddressModel(AppDb db)
         {
             Db = db;
         }
@@ -37,6 +38,14 @@ namespace UserManagement
             */
 
         }
-
+        public void BindParams(MySqlCommand cmd, string suffix="")
+        {
+            cmd.Parameters.Add(new MySqlParameter("addres_type" + suffix, AddressType));
+            cmd.Parameters.Add(new MySqlParameter("addres" + suffix, AddressLine));
+            cmd.Parameters.Add(new MySqlParameter("city" + suffix, City));
+            cmd.Parameters.Add(new MySqlParameter("state" + suffix, State));
+            cmd.Parameters.Add(new MySqlParameter("country" + suffix, Country));
+            cmd.Parameters.Add(new MySqlParameter("pin" + suffix, PIN));
+        }
     }
 }

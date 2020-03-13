@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using UserManagement.Models;
 
 namespace UserManagement
 {
@@ -22,7 +23,7 @@ namespace UserManagement
         public string DOB { get; set; }
         public string Gender { get; set; }
         public string DOJ { get; set; }
-        public string ContactNumberType { get; set; }
+        /*public string ContactNumberType { get; set; }
         public string Number { get; set; }
       //  public string CountryId { get; set; }
         public string AreaCode { get; set; }
@@ -40,13 +41,17 @@ namespace UserManagement
         public string State2 { get; set; }
         public string Country2 { get; set; }
         public string PIN2 { get; set; }
-        //public ContactNumber phones;
-        //public Address[] addresses;
+        */
+        public List<ContactNumberModel> phones { get; set; }
+        public List<AddressModel> addresses { get; set; }
 
         internal AppDb Db { get; set; }
 
         public User()
         {
+            phones = new List<ContactNumberModel>();
+            addresses = new List<AddressModel>();
+            //addresses = new AddressModel[] { new AddressModel(), new AddressModel() };
         }
 
         internal User(AppDb db)
@@ -55,6 +60,8 @@ namespace UserManagement
         }
         public string AddOneUser()
         {
+            
+
             using var cmd = Db.Connection.CreateCommand();
             cmd.CommandText = "insert_user_data";
             cmd.CommandType = CommandType.StoredProcedure;
@@ -66,26 +73,12 @@ namespace UserManagement
             cmd.Parameters.Add(outputEmailParam);
             //cmd.Connection.Open();
             cmd.ExecuteNonQuery();
-            System.Diagnostics.Debug.WriteLine("ABCDE----------------------------------------");
+            //System.Diagnostics.Debug.WriteLine("ABCDE----------------------------------------");
             //cmd.Connection.Close();
             return (string)outputEmailParam.Value;
 
         }
 
-        /*public async Task<bool> FindOneAsync(string username)
-        {
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"SELECT user_id FROM user WHERE username = @username";
-            cmd.Parameters.Add(new MySqlParameter
-            {
-                ParameterName = "@username",
-                DbType = DbType.String,
-                Value = username
-            });
-            var result = await cmd.ExecuteReaderAsync();
-            return await result.ReadAsync();
-        }
-        */
         public int Delete()
         {
             using var cmd = Db.Connection.CreateCommand();
@@ -96,10 +89,10 @@ namespace UserManagement
             cmd.ExecuteNonQuery();
             return 1;
         }
-        public List<Object> GetAllUsers()
+        public List<User> GetAllUsers()
         {
             using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"SELECT `first_name`,`middle_name`,`last_name`,`email`,`username`  FROM `user` where `is_active`=1";
+            cmd.CommandText = "call get_all_active_user()";
             return ReadAll(cmd.ExecuteReader());
         }
 
@@ -111,31 +104,66 @@ namespace UserManagement
               cmd.ExecuteNonQuery();
           }
 
-        private List<Object> ReadAll(DbDataReader reader)
+        public static string GetSafeString(MySqlDataReader reader, string colName)
         {
-            var posts = new List<Object>();
+            return reader[colName] != System.DBNull.Value ? (string)reader[colName] : "";
+        }
+
+        private AddressModel AddAddress(MySqlDataReader reader,string prefix)
+        {
+            var address1 = new AddressModel();
+            address1.AddressLine = GetSafeString(reader, prefix + "_address");
+            address1.AddressType = prefix;
+            address1.City = GetSafeString(reader, prefix +"_city");
+            address1.State = GetSafeString(reader, prefix + "_state");
+            address1.Country = GetSafeString(reader, prefix + "_country");
+            address1.PIN = GetSafeString(reader, prefix + "_pin");
+           
+
+            return address1;
+        }
+        private ContactNumberModel AddContact(MySqlDataReader reader, string prefix)
+        {
+            var contact1 = new ContactNumberModel();
+            contact1.ContactNumberType = prefix;
+            contact1.CountryCode = GetSafeString(reader, prefix + "_country_code");
+            contact1.AreaCode = GetSafeString(reader, prefix + "_area_code");
+            contact1.Number = GetSafeString(reader, prefix + "_number");
+
+            return contact1;
+        }
+
+            private List<User> ReadAll(MySqlDataReader reader)
+        {
+            var posts = new List<User>();
             using (reader)
             {
                 while (reader.Read())
                 {
-                    var post = new 
-                    {
-                        //  Id = reader.GetInt32(0),
-                        FirstName = reader.GetString(0),
-                        MiddleName = reader.GetString(1),
-                        LastName = reader.GetString(2),
-                        Email = reader.GetString(3),
-                        UserName = reader.GetString(4),
-                        //DOB = Convert.ToDateTime(reader["date_of_birth"]).ToString("dd/MM/yyyy"),
-                        //DOJ = Convert.ToDateTime(reader["date_of_joining"]).ToString("dd/MM/yyyy")
+                    var post = new User();
+                    post.Salutation = GetSafeString(reader,"salutation");
+                    post.FirstName = GetSafeString(reader, "first_name");
+                    post.MiddleName = GetSafeString(reader, "middle_name");
+                    post.LastName = GetSafeString(reader, "last_name");
+                    //UserName = reader.GetString(7),
+                    post.DepartmentName = GetSafeString(reader, "department_name");
+                    post.DesignationName = GetSafeString(reader, "designation_name");
+                    post.Email = GetSafeString(reader, "email");
+                    post.Gender = GetSafeString(reader, "gender");
+                    post.DOB = Convert.ToDateTime(reader["date_of_birth"]).ToString("dd/MM/yyyy");
+                    post.DOJ = Convert.ToDateTime(reader["date_of_joining"]).ToString("dd/MM/yyyy");
+                    post.addresses.Add(AddAddress(reader, "current"));
+                    post.addresses.Add(AddAddress(reader, "permanant"));
+                    post.phones.Add(AddContact(reader,"mobile"));
+                    post.phones.Add(AddContact(reader, "work"));
+                    post.phones.Add(AddContact(reader, "home"));
 
-                        //  Content = reader.GetString(2),
-                    };
                     posts.Add(post);
                 }
             }
             return posts;
         }
+
 
         private void BindAddProcParams(MySqlCommand cmd)
         {
@@ -151,26 +179,13 @@ namespace UserManagement
             cmd.Parameters.Add(new MySqlParameter("dob", DOB));
             cmd.Parameters.Add(new MySqlParameter("gend", Gender));
             cmd.Parameters.Add(new MySqlParameter("doj", DOJ));
-            cmd.Parameters.Add(new MySqlParameter("ph_num_type", ContactNumberType));
-            cmd.Parameters.Add(new MySqlParameter("ph_number", Number));
-            cmd.Parameters.Add(new MySqlParameter("ph_ext", AreaCode));
-            cmd.Parameters.Add(new MySqlParameter("addres_type", AddressType));
-            cmd.Parameters.Add(new MySqlParameter("addres", AddressLine));
-            cmd.Parameters.Add(new MySqlParameter("city", City));
-            cmd.Parameters.Add(new MySqlParameter("state", State));
-            cmd.Parameters.Add(new MySqlParameter("country", Country));
-            cmd.Parameters.Add(new MySqlParameter("pin", PIN));
-            cmd.Parameters.Add(new MySqlParameter("addres_type2", AddressType2));
-            cmd.Parameters.Add(new MySqlParameter("addres2", AddressLine2));
-            cmd.Parameters.Add(new MySqlParameter("city2", City2));
-            cmd.Parameters.Add(new MySqlParameter("state2", State2));
-            cmd.Parameters.Add(new MySqlParameter("country2", Country2));
-            cmd.Parameters.Add(new MySqlParameter("pin2", PIN2));
+            phones[0].BindParams(cmd);
+            phones[1].BindParams(cmd);
+            phones[2].BindParams(cmd);
+
+            addresses[0].BindParams(cmd);
+            addresses[1].BindParams(cmd, "2");
             cmd.Parameters.Add(new MySqlParameter("is_ac", 1));
-            /* TODO
-            Add phone number parameters
-            Add address parameters
-            */
         }
         private void BindUsername(MySqlCommand cmd)
         {
