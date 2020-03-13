@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using System.Web.Http.Cors;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -8,7 +7,6 @@ using UserManagement.Models;
 
 namespace UserManagement.Controllers
 {
-    //[AllowCrossSiteJson]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
@@ -26,7 +24,6 @@ namespace UserManagement.Controllers
             var query = new User(Db);
             var result = query.GetAllUsers();
             Db.Connection.Close();
-            //Response.AppendHeader("Access-Control-Allow-Origin", "*");
             return new OkObjectResult(result);
         }
 
@@ -34,22 +31,11 @@ namespace UserManagement.Controllers
         [Route("add")]
         public async Task<IActionResult> Post([FromBody]User item)
         {
-            //User item = JsonConvert.DeserializeObject<User>(jres.ToString());
-            //JsonModel j = new JsonModel( HttpContext.Request.Body);
-            //System.Diagnostics.Debug.Write(item.FirstName);
-           // var item = await Request.Content.ReadAsStringAsync();
             Db.Connection.Open();
-     
-            //string jsonString = JsonConvert.SerializeObject(item);
-            //User us = JsonConvert.DeserializeObject<User>(item);
             item.Db = Db;
-            //System.Diagnostics.Debug.Write(jsonString);
             var result = item.AddOneUser();
             Db.Connection.Close();
-            //item.FirstName = "abc";
             return new OkObjectResult(result);
-            //return item;
-            // return Ok();
         }
         [HttpPost]
         [Route("addAll")]
@@ -71,11 +57,9 @@ namespace UserManagement.Controllers
         {
             Db.Connection.Open();
             var query = new  AssignmentModel(Db);
-            var result = query.getAllUsers();
+            var result = query.getAllUsersInCustomFormat();
             Db.Connection.Close();
             return Ok(result);
-
-            // return Ok();
         }
 
         // [HttpPut]

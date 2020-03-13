@@ -1,9 +1,5 @@
 ﻿using System.Collections.Generic;
 using System;
-using System.Data;
-using System.Data.Common;
-using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
 
 namespace UserManagement.Models
 {
@@ -11,8 +7,7 @@ namespace UserManagement.Models
     {
         public String Name { get; set; }
         public String Address { get; set; }
-        // public DateTime DOJ  { get; set; }
-        public AgePrams currentCompanyExp { get; set; }
+        public String currentCompanyExp { get; set; }
         public Object ContactDetail {get; set; }
         public AgePrams age { get; set; }
         public bool isIndian { get; set; }
@@ -22,7 +17,7 @@ namespace UserManagement.Models
             Db = db;
         }
 
-        public List<AssignmentModel> getAllUsers() {
+        public List<AssignmentModel> getAllUsersInCustomFormat() {
             var ls = new List<AssignmentModel>();
             
             var users = new User(Db).GetAllUsers();
@@ -34,15 +29,13 @@ namespace UserManagement.Models
                 post.Name = u.FirstName + " " + u.MiddleName + " " + u.LastName;
                 post.isIndian = u.addresses[0].Country == "India";
                 post.Address = u.addresses[0].AddressLine + "," + u.addresses[0].City + "," + u.addresses[0].State + "," + u.addresses[0].PIN;
-                
-               // post.ContactDetail = new List<Object>();
                 post.ContactDetail = new {
                     Primary = u.phones[0].Number,
                     Secondary = u.phones[1].Number
                 };
-
-                post.currentCompanyExp = CalculateDate(Convert.ToDateTime(u.DOJ));
-                post.age = CalculateDate(Convert.ToDateTime(u.DOB));
+                post.currentCompanyExp = calc(Convert.ToDateTime(u.DOJ)).ToString();
+                post.age = calc(Convert.ToDateTime(u.DOB));
+                 
                 ls.Add(post);
             }
 
@@ -51,31 +44,16 @@ namespace UserManagement.Models
         }
 
 
-        public AgePrams CalculateDate(DateTime b)
+        public AgePrams calc(DateTime b)
         {
-
-            // a =  DateTime.Now();
-            String CurrentDay = DateTime.Now.ToString("dd");
-            String CurrentMonth = DateTime.Now.ToString("MM");
-            String CurrentYear = DateTime.Now.ToString("yyyy");
-            String DOJDay = b.ToString("dd");
-            String DOJMonth = b.ToString("MM");
-            String DOJYear = b.ToString("yyyy");
-            int Months = (Convert.ToInt32(CurrentMonth) - Convert.ToInt32(DOJMonth));
-            int Years = (Convert.ToInt32(CurrentYear) - Convert.ToInt32(DOJYear));
-            if (Convert.ToInt32(CurrentDay) < Convert.ToInt32(DOJDay))
-            {
-                Months--;
-            }
-            if (Convert.ToInt32(Months) < 0)
-            {
-                Years--;
-                Months += 12;
-            }
-            // int offs=b.AddMonths(   (Years*12)  +Months     ).Days;
-            //  int Days=(int)((today.Ticks-offs.Ticks)/TimeSpan.TicksPerday);
-            //int Days = offs;
-            return new AgePrams(0, Months, Years);
+            DateTime zeroTime = new DateTime(1, 1, 1);
+            DateTime olddate = b;
+            DateTime curdate = DateTime.Now.ToLocalTime();
+            TimeSpan span = curdate - olddate;
+            int years = (zeroTime + span).Year - 1;
+            int months = (zeroTime + span).Month - 1;
+            int days = (zeroTime + span).Day - 1;
+            return new AgePrams(days, months, years);
         }
     }
     public class AgePrams
@@ -89,5 +67,11 @@ namespace UserManagement.Models
             Months = b;
             Years = c;
         }
+        public string ToString()
+        {
+            return this.Years + " years " + Months + " months";
+        }
+
+        
     }
 }

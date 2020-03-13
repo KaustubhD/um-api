@@ -23,25 +23,6 @@ namespace UserManagement
         public string DOB { get; set; }
         public string Gender { get; set; }
         public string DOJ { get; set; }
-        /*public string ContactNumberType { get; set; }
-        public string Number { get; set; }
-      //  public string CountryId { get; set; }
-        public string AreaCode { get; set; }
-        
-        public string AddressType { get; set; }
-        public string AddressLine { get; set; }
-        public string City { get; set; }
-        public string State { get; set; }
-        public string Country { get; set; }
-
-        public string PIN { get; set; }
-        public string AddressType2 { get; set; }
-        public string AddressLine2 { get; set; }
-        public string City2 { get; set; }
-        public string State2 { get; set; }
-        public string Country2 { get; set; }
-        public string PIN2 { get; set; }
-        */
         public List<ContactNumberModel> phones { get; set; }
         public List<AddressModel> addresses { get; set; }
 
@@ -51,7 +32,6 @@ namespace UserManagement
         {
             phones = new List<ContactNumberModel>();
             addresses = new List<AddressModel>();
-            //addresses = new AddressModel[] { new AddressModel(), new AddressModel() };
         }
 
         internal User(AppDb db)
@@ -73,7 +53,6 @@ namespace UserManagement
             cmd.Parameters.Add(outputEmailParam);
             //cmd.Connection.Open();
             cmd.ExecuteNonQuery();
-            //System.Diagnostics.Debug.WriteLine("ABCDE----------------------------------------");
             //cmd.Connection.Close();
             return (string)outputEmailParam.Value;
 
