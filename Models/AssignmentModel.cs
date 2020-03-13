@@ -13,8 +13,9 @@ namespace UserManagement.Models
         public String Address { get; set; }
         // public DateTime DOJ  { get; set; }
         public AgePrams currentCompanyExp { get; set; }
-        public Object ContactDetail {get; set;}
+        public Object ContactDetail {get; set; }
         public AgePrams age { get; set; }
+        public bool isIndian { get; set; }
         internal AppDb Db { get; set; }
         public AssignmentModel() { }
         internal AssignmentModel(AppDb db) {
@@ -31,6 +32,7 @@ namespace UserManagement.Models
 
                 //  Id = reader.GetInt32(0),
                 post.Name = u.FirstName + " " + u.MiddleName + " " + u.LastName;
+                post.isIndian = u.addresses[0].Country == "India";
                 post.Address = u.addresses[0].AddressLine + "," + u.addresses[0].City + "," + u.addresses[0].State + "," + u.addresses[0].PIN;
                 
                // post.ContactDetail = new List<Object>();
