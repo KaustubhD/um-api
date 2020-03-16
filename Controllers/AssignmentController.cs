@@ -73,12 +73,13 @@ namespace UserManagement.Controllers
 
         // PUT: api/Assignment/5
         [HttpPut("{username}")]
-        public void Put(String uname, [FromBody]AssignmentModel body)
+        public ActionResult Put(String username, [FromBody]AssignmentModel body)
         {
             Db.Connection.Open();
             var query = new AssignmentModel(Db);
-            query.Update(uname, body);
+            query.Update(username, body);
             Db.Connection.Close();
+            return Ok();
         }
 
         // DELETE: api/ApiWithActions/5

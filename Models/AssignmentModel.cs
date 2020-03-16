@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using MySql.Data.MySqlClient;
 
 namespace UserManagement.Models
 {
@@ -8,7 +9,7 @@ namespace UserManagement.Models
         public String name { get; set; }
         public String? address { get; set; }
         public AgePrams? currentCompanyExp { get; set; }
-        public Object? contactDetail {get; set; }
+        public AssignmentContactModel? contactDetail {get; set; }
         public AgePrams? age { get; set; }
         public bool? isIndian { get; set; }
         internal AppDb Db { get; set; }
@@ -21,7 +22,7 @@ namespace UserManagement.Models
             this.name = u.FirstName + (u.MiddleName != "" ? " " + u.MiddleName : "") + " " + u.LastName;
             this.isIndian = u.addresses[0].Country == "India";
             this.address = u.addresses[0].AddressLine + "," + u.addresses[0].City + "," + u.addresses[0].State + "," + u.addresses[0].PIN;
-            this.contactDetail = new
+            this.contactDetail = new AssignmentContactModel()
             {
                 Primary = u.phones[0].Number,
                 Secondary = u.phones[1].Number
@@ -52,32 +53,63 @@ namespace UserManagement.Models
             return new AssignmentModel(user);
 
         }
-
         public void Update(String uname, AssignmentModel model)
         {
             string[] names = model.name.Split(" ");
+            Console.WriteLine("----------" + names[0]);
+
             using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"update user set first_name=@f,middle_name=@m,last_name=@l where username=@u";
-            cmd.Parameters.AddWithValue("@f", names[0]);
+            cmd.CommandText = @"update user set first_name=@f,middle_name=@m,last_name=@l where username=@u;";
+            cmd.Parameters.Add(new MySqlParameter("@f", names[0]));
+            cmd.Parameters.Add(new MySqlParameter("@u", uname));
+            var midName = new MySqlParameter("@m", DBNull.Value);
 
             switch (names.Length){
                 case 1:
                     break;
                 case 2:
-                    cmd.Parameters.AddWithValue("@l", names[1]);
+                    cmd.Parameters.Add(new MySqlParameter("@l", names[1]));
                     break;
                 case 3:
-                    cmd.Parameters.AddWithValue("@m", names[1]);
+                    midName.Value = names[1];
                     cmd.Parameters.AddWithValue("@l", names[2]);
                     break;
                 default:
                     string mid = "";
                     for (int i = 1; i < names.Length - 1; i++) { mid += names[i] + " "; }
                     mid = mid.Remove(mid.LastIndexOf(" "), " ".Length).Insert(mid.LastIndexOf(" "), ""); // Remove last space
-                    cmd.Parameters.AddWithValue("@m", mid);
+                    cmd.Parameters.Add(new MySqlParameter("@m", mid));
                     cmd.Parameters.AddWithValue("@l", names[names.Length - 1]);
                     break;
             }
+            cmd.Parameters.Add(midName);
+            cmd.ExecuteNonQuery();
+
+            
+            cmd.CommandText = @"update contact_number c inner join user_to_contact using(contact_id) inner join user using(user_id) inner join contact_type using(contact_type_id) set number=@num where username=@u and contact_type=@typ";
+            cmd.Parameters.AddWithValue("@num", model.contactDetail.Primary);
+            cmd.Parameters.AddWithValue("@typ","Mobile");
+            cmd.ExecuteNonQuery();
+
+            if (!string.IsNullOrEmpty(model.contactDetail.Secondary))
+            {
+                cmd.Parameters.AddWithValue("@num", model.contactDetail.Secondary);
+                cmd.Parameters.AddWithValue("@typ", "Work");
+                cmd.ExecuteNonQuery();
+            }
+            
+            string[] address = model.address.Split(",");
+
+            string add = "";
+            cmd.CommandText = @"call update_address(@u,@address,@city,@state,'India',@pin)";
+
+            cmd.Parameters.AddWithValue("@pin", address[address.Length - 1]);
+            cmd.Parameters.AddWithValue("@state", address[address.Length - 2]);
+            cmd.Parameters.AddWithValue("@city", address[address.Length - 3]);
+            for (int i = 0; i < address.Length - 3; i++) { add += address[i] + " "; }
+            add = add.Remove(add.LastIndexOf(" "), " ".Length).Insert(add.LastIndexOf(" "), ""); // Remove last space
+
+            cmd.Parameters.AddWithValue("@address", add);
             cmd.ExecuteNonQuery();
 
 
@@ -95,6 +127,12 @@ namespace UserManagement.Models
             int days = (zeroTime + span).Day - 1;
             return new AgePrams(days, months, years);
         }
+    }
+
+    public class AssignmentContactModel
+    {
+        public String Primary { get; set; }
+        public String Secondary { get; set; }
     }
     public class AgePrams
     {
