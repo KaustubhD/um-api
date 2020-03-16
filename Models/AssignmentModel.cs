@@ -7,7 +7,7 @@ namespace UserManagement.Models
     {
         public String name { get; set; }
         public String? address { get; set; }
-        public String? currentCompanyExp { get; set; }
+        public AgePrams? currentCompanyExp { get; set; }
         public Object? contactDetail {get; set; }
         public AgePrams? age { get; set; }
         public bool? isIndian { get; set; }
@@ -26,7 +26,7 @@ namespace UserManagement.Models
                 Primary = u.phones[0].Number,
                 Secondary = u.phones[1].Number
             };
-            this.currentCompanyExp = calc(Convert.ToDateTime(u.DOJ)).ToString();
+            this.currentCompanyExp = calc(Convert.ToDateTime(u.DOJ));
             this.age = calc(Convert.ToDateTime(u.DOB));
 
         }
@@ -73,12 +73,13 @@ namespace UserManagement.Models
                 default:
                     string mid = "";
                     for (int i = 1; i < names.Length - 1; i++) { mid += names[i] + " "; }
-                    string result = mid.Remove(mid.LastIndexOf(" "), " ".Length).Insert(mid.LastIndexOf(" "), "");
-                    System.Diagnostics.Debug.Write("---------------"+result);
+                    mid = mid.Remove(mid.LastIndexOf(" "), " ".Length).Insert(mid.LastIndexOf(" "), ""); // Remove last space
                     cmd.Parameters.AddWithValue("@m", mid);
                     cmd.Parameters.AddWithValue("@l", names[names.Length - 1]);
                     break;
             }
+            cmd.ExecuteNonQuery();
+
 
         }
 
