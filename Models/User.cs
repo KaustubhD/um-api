@@ -68,10 +68,17 @@ namespace UserManagement
             cmd.ExecuteNonQuery();
             return 1;
         }
-        public List<User> GetAllUsers()
+        public List<User> GetAllUsers(string names="")
         {
             using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = "call get_all_active_user()";
+            Console.WriteLine("------------------" + names);
+            if(names != "" || names != null || names != String.Empty)
+            {
+                cmd.CommandText = "call get_users_by_name(@namee)";
+                cmd.Parameters.AddWithValue("@namee", names);
+            }
+            else
+                cmd.CommandText = "call get_all_active_user()";
             return ReadAll(cmd.ExecuteReader());
         }
 
@@ -112,7 +119,16 @@ namespace UserManagement
             return contact1;
         }
 
-            private List<User> ReadAll(MySqlDataReader reader)
+        public User getUserById(int id)
+        {
+            using var cmd = Db.Connection.CreateCommand();
+            cmd.CommandText = "call get_user(@id)";
+            cmd.Parameters.AddWithValue("@id", id);
+            
+            cmd.ExecuteNonQuery();
+            return ReadUser(cmd.ExecuteReader());
+        }
+        private List<User> ReadAll(MySqlDataReader reader)
         {
             var posts = new List<User>();
             using (reader)
@@ -124,7 +140,7 @@ namespace UserManagement
                     post.FirstName = GetSafeString(reader, "first_name");
                     post.MiddleName = GetSafeString(reader, "middle_name");
                     post.LastName = GetSafeString(reader, "last_name");
-                    //UserName = reader.GetString(7),
+                    post.UserName = GetSafeString(reader, "username");
                     post.DepartmentName = GetSafeString(reader, "department_name");
                     post.DesignationName = GetSafeString(reader, "designation_name");
                     post.Email = GetSafeString(reader, "email");
@@ -143,6 +159,37 @@ namespace UserManagement
             return posts;
         }
 
+
+        private User ReadUser(MySqlDataReader reader)
+        {
+            var post = new User();
+            using (reader)
+            {
+                while (reader.Read())
+                {
+                    
+                    post.Salutation = GetSafeString(reader, "salutation");
+                    post.FirstName = GetSafeString(reader, "first_name");
+                    post.MiddleName = GetSafeString(reader, "middle_name");
+                    post.LastName = GetSafeString(reader, "last_name");
+                    post.UserName = GetSafeString(reader, "username");
+                    post.DepartmentName = GetSafeString(reader, "department_name");
+                    post.DesignationName = GetSafeString(reader, "designation_name");
+                    post.Email = GetSafeString(reader, "email");
+                    post.Gender = GetSafeString(reader, "gender");
+                    post.DOB = Convert.ToDateTime(reader["date_of_birth"]).ToString("dd/MM/yyyy");
+                    post.DOJ = Convert.ToDateTime(reader["date_of_joining"]).ToString("dd/MM/yyyy");
+                    post.addresses.Add(AddAddress(reader, "current"));
+                    post.addresses.Add(AddAddress(reader, "permanant"));
+                    post.phones.Add(AddContact(reader, "mobile"));
+                    post.phones.Add(AddContact(reader, "work"));
+                    post.phones.Add(AddContact(reader, "home"));
+
+                    
+                }
+            }
+            return post;
+        }
 
         private void BindAddProcParams(MySqlCommand cmd)
         {
@@ -171,5 +218,6 @@ namespace UserManagement
             cmd.Parameters.Add(new MySqlParameter("username", UserName));
         }
 
+     
     }
 }

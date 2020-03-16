@@ -18,7 +18,7 @@ namespace UserManagement.Controllers
 
         [HttpGet]
         [Route("all")]
-        public async Task<IActionResult> GetAllUsers()
+        public IActionResult GetAllUsers()
         {
             Db.Connection.Open();
             var query = new User(Db);
@@ -29,7 +29,7 @@ namespace UserManagement.Controllers
 
         [HttpPost]
         [Route("add")]
-        public async Task<IActionResult> Post([FromBody]User item)
+        public IActionResult Post([FromBody]User item)
         {
             Db.Connection.Open();
             item.Db = Db;
@@ -37,46 +37,35 @@ namespace UserManagement.Controllers
             Db.Connection.Close();
             return new OkObjectResult(result);
         }
+
         [HttpPost]
         [Route("addAll")]
-        public async Task<IActionResult> Post([FromBody]MultipleUsers body)
+        public IActionResult Post([FromBody]MultipleUsers body)
         {
             Db.Connection.Open();
             body.Db = Db;
             body.AddAllUsers();
             Db.Connection.Close();
             return Ok();
-
-            // return Ok();
         }
 
 
-        [HttpGet]
-        [Route("assignment")]
-        public async Task<IActionResult> Get()
-        {
-            Db.Connection.Open();
-            var query = new  AssignmentModel(Db);
-            var result = query.getAllUsersInCustomFormat();
-            Db.Connection.Close();
-            return Ok(result);
-        }
 
-        // [HttpPut]
-
+        [HttpPut]
         [Route("{username}/inactive")]
-        public async  Task<IActionResult> PutOne(string username)
+        public IActionResult PutOne(string username)
         {
             Db.Connection.Open();
             var query = new User(Db);
             query.UserName = username;
             query.Update();
+            Db.Connection.Close();
             return Ok();
         }
         
-        //[HttpDelete]
+        [HttpDelete]
         [Route("{username}/remove")]
-        public async Task<IActionResult> DeleteOne(string username)
+        public IActionResult DeleteOne(string username)
         {
             Db.Connection.Open();
             User query = new User(Db);

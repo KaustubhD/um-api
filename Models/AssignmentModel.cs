@@ -3,44 +3,83 @@ using System;
 
 namespace UserManagement.Models
 {
-    public class AssignmentModel
+    public class AssignmentModel : BaseEntity
     {
-        public String Name { get; set; }
-        public String Address { get; set; }
-        public String currentCompanyExp { get; set; }
-        public Object ContactDetail {get; set; }
-        public AgePrams age { get; set; }
-        public bool isIndian { get; set; }
+        public String name { get; set; }
+        public String? address { get; set; }
+        public String? currentCompanyExp { get; set; }
+        public Object? contactDetail {get; set; }
+        public AgePrams? age { get; set; }
+        public bool? isIndian { get; set; }
         internal AppDb Db { get; set; }
         public AssignmentModel() { }
         internal AssignmentModel(AppDb db) {
             Db = db;
         }
+        internal AssignmentModel(User u)
+        {
+            this.name = u.FirstName + (u.MiddleName != "" ? " " + u.MiddleName : "") + " " + u.LastName;
+            this.isIndian = u.addresses[0].Country == "India";
+            this.address = u.addresses[0].AddressLine + "," + u.addresses[0].City + "," + u.addresses[0].State + "," + u.addresses[0].PIN;
+            this.contactDetail = new
+            {
+                Primary = u.phones[0].Number,
+                Secondary = u.phones[1].Number
+            };
+            this.currentCompanyExp = calc(Convert.ToDateTime(u.DOJ)).ToString();
+            this.age = calc(Convert.ToDateTime(u.DOB));
 
-        public List<AssignmentModel> getAllUsersInCustomFormat() {
+        }
+
+        public List<AssignmentModel> getAllUsersInCustomFormat(String names = "") {
             var ls = new List<AssignmentModel>();
             
-            var users = new User(Db).GetAllUsers();
+            var users = new User(Db).GetAllUsers(names);
             foreach(User u in users)
             {
-                var post = new AssignmentModel();
+                var post = new AssignmentModel(u);
 
-                //  Id = reader.GetInt32(0),
-                post.Name = u.FirstName + " " + u.MiddleName + " " + u.LastName;
-                post.isIndian = u.addresses[0].Country == "India";
-                post.Address = u.addresses[0].AddressLine + "," + u.addresses[0].City + "," + u.addresses[0].State + "," + u.addresses[0].PIN;
-                post.ContactDetail = new {
-                    Primary = u.phones[0].Number,
-                    Secondary = u.phones[1].Number
-                };
-                post.currentCompanyExp = calc(Convert.ToDateTime(u.DOJ)).ToString();
-                post.age = calc(Convert.ToDateTime(u.DOB));
                  
                 ls.Add(post);
             }
 
 
             return ls;
+        }
+        public AssignmentModel getUserInCustomFormat(int id)
+        {
+            var user = new User(Db).getUserById(id);
+            return new AssignmentModel(user);
+
+        }
+
+        public void Update(String uname, AssignmentModel model)
+        {
+            string[] names = model.name.Split(" ");
+            using var cmd = Db.Connection.CreateCommand();
+            cmd.CommandText = @"update user set first_name=@f,middle_name=@m,last_name=@l where username=@u";
+            cmd.Parameters.AddWithValue("@f", names[0]);
+
+            switch (names.Length){
+                case 1:
+                    break;
+                case 2:
+                    cmd.Parameters.AddWithValue("@l", names[1]);
+                    break;
+                case 3:
+                    cmd.Parameters.AddWithValue("@m", names[1]);
+                    cmd.Parameters.AddWithValue("@l", names[2]);
+                    break;
+                default:
+                    string mid = "";
+                    for (int i = 1; i < names.Length - 1; i++) { mid += names[i] + " "; }
+                    string result = mid.Remove(mid.LastIndexOf(" "), " ".Length).Insert(mid.LastIndexOf(" "), "");
+                    System.Diagnostics.Debug.Write("---------------"+result);
+                    cmd.Parameters.AddWithValue("@m", mid);
+                    cmd.Parameters.AddWithValue("@l", names[names.Length - 1]);
+                    break;
+            }
+
         }
 
 
@@ -69,7 +108,10 @@ namespace UserManagement.Models
         }
         public string ToString()
         {
-            return this.Years + " years " + Months + " months";
+            String res = "";
+            res += this.Years == 0 ? "" : (this.Years > 1 ? this.Years + " years " : this.Years + " year ");
+            res += this.Months == 0 ? "" : (this.Months > 1 ? this.Months + " months" : this.Months + " month");
+            return res;
         }
 
         
