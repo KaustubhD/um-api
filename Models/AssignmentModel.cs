@@ -87,14 +87,17 @@ namespace UserManagement.Models
 
             
             cmd.CommandText = @"update contact_number c inner join user_to_contact using(contact_id) inner join user using(user_id) inner join contact_type using(contact_type_id) set number=@num where username=@u and contact_type=@typ";
-            cmd.Parameters.AddWithValue("@num", model.contactDetail.Primary);
-            cmd.Parameters.AddWithValue("@typ","Mobile");
+            var number = new MySqlParameter("@num", model.contactDetail.Primary);
+            var numberType = new MySqlParameter("@typ", "Mobile");
+
+            cmd.Parameters.Add(number);
+            cmd.Parameters.Add(numberType);
             cmd.ExecuteNonQuery();
 
             if (!string.IsNullOrEmpty(model.contactDetail.Secondary))
             {
-                cmd.Parameters.AddWithValue("@num", model.contactDetail.Secondary);
-                cmd.Parameters.AddWithValue("@typ", "Work");
+                number.Value =  model.contactDetail.Secondary;
+                numberType.Value = "Work";
                 cmd.ExecuteNonQuery();
             }
             
