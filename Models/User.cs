@@ -191,6 +191,76 @@ namespace UserManagement
             return post;
         }
 
+        /*
+        public void UpdateUser(String uname, User model)
+        {
+            string[] names = model.name.Split(" ");
+            Console.WriteLine("----------" + names[0]);
+
+            using var cmd = Db.Connection.CreateCommand();
+            cmd.CommandText = @"update user set first_name=@f,middle_name=@m,last_name=@l where username=@u;";
+            cmd.Parameters.Add(new MySqlParameter("@f", names[0]));
+            cmd.Parameters.Add(new MySqlParameter("@u", uname));
+            var midName = new MySqlParameter("@m", DBNull.Value);
+
+            switch (names.Length)
+            {
+                case 1:
+                    break;
+                case 2:
+                    cmd.Parameters.Add(new MySqlParameter("@l", names[1]));
+                    break;
+                case 3:
+                    midName.Value = names[1];
+                    cmd.Parameters.AddWithValue("@l", names[2]);
+                    break;
+                default:
+                    string mid = "";
+                    for (int i = 1; i < names.Length - 1; i++) { mid += names[i] + " "; }
+                    mid = mid.Remove(mid.LastIndexOf(" "), " ".Length).Insert(mid.LastIndexOf(" "), ""); // Remove last space
+                    cmd.Parameters.Add(new MySqlParameter("@m", mid));
+                    cmd.Parameters.AddWithValue("@l", names[names.Length - 1]);
+                    break;
+            }
+            cmd.Parameters.Add(midName);
+            cmd.ExecuteNonQuery();
+
+
+            cmd.CommandText = @"update contact_number c inner join user_to_contact using(contact_id) inner join user using(user_id) inner join contact_type using(contact_type_id) set number=@num where username=@u and contact_type=@typ";
+            var number = new MySqlParameter("@num", model.phones[0].Number);
+            var numberType = new MySqlParameter("@typ", model.phones[0].ContactNumberType);
+
+            cmd.Parameters.Add(number);
+            cmd.Parameters.Add(numberType);
+            cmd.ExecuteNonQuery();
+
+            if (!string.IsNullOrEmpty(model.phones[1].ContactNumberType))
+            {
+                number.Value = model.phones[1].Number;
+                numberType.Value = model.phones[1].ContactNumberType;
+                cmd.ExecuteNonQuery();
+            }
+
+            //string[] address = model.address.Split(",");
+
+            //string add = "";
+            cmd.CommandText = @"call update_address(@u,@address,@city,@state,@coun,@pin)";
+
+            cmd.Parameters.AddWithValue("@pin", model.addresses[0].PIN);
+            cmd.Parameters.AddWithValue("@state", model.address.State);
+            cmd.Parameters.AddWithValue("@city", model.address.City);
+            cmd.Parameters.AddWithValue("@coun", model.address.Country);
+
+            cmd.Parameters.AddWithValue("@address", model.address.AddressLine);
+            cmd.ExecuteNonQuery();
+
+
+        }
+
+        */
+
+
+
         private void BindAddProcParams(MySqlCommand cmd)
         {
             cmd.Parameters.Add(new MySqlParameter("salut", Salutation));
@@ -205,10 +275,15 @@ namespace UserManagement
             cmd.Parameters.Add(new MySqlParameter("dob", DOB));
             cmd.Parameters.Add(new MySqlParameter("gend", Gender));
             cmd.Parameters.Add(new MySqlParameter("doj", DOJ));
-            phones[0].BindParams(cmd);
-            phones[1].BindParams(cmd);
-            phones[2].BindParams(cmd);
+            foreach(ContactNumberModel phone in phones)
+            {
+                phone.BindParams(cmd);
+            }
 
+            foreach (ContactNumberModel phone in phones)
+            {
+                phone.BindParams(cmd);
+            }
             addresses[0].BindParams(cmd);
             addresses[1].BindParams(cmd, "2");
             cmd.Parameters.Add(new MySqlParameter("is_ac", 1));

@@ -1,0 +1,13 @@
+
+
+
+Locations
+1. GET api/location/country
+2. GET api/location/state?id=<country_id>
+3. GET api/location/city?id=<state_id>
+
+Returns
+{
+	id
+	name
+}

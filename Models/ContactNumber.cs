@@ -42,7 +42,6 @@ namespace UserManagement.Models
         public void BindParams(MySqlCommand cmd)
         {
             cmd.Parameters.Add(new MySqlParameter("ph_num_type", ContactNumberType));
-            System.Diagnostics.Debug.WriteLine(ContactNumberType);
             cmd.Parameters.Add(new MySqlParameter("ph_number", Number));
             cmd.Parameters.Add(new MySqlParameter("ph_ext", AreaCode));
         }
