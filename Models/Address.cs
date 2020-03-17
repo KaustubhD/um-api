@@ -38,14 +38,14 @@ namespace UserManagement.Models
             */
 
         }
-        public void BindParams(MySqlCommand cmd, string suffix="")
+        public void BindParams(MySqlCommand cmd)
         {
-            cmd.Parameters.Add(new MySqlParameter("addres_type" + suffix, AddressType));
-            cmd.Parameters.Add(new MySqlParameter("addres" + suffix, AddressLine));
-            cmd.Parameters.Add(new MySqlParameter("city" + suffix, City));
-            cmd.Parameters.Add(new MySqlParameter("state" + suffix, State));
-            cmd.Parameters.Add(new MySqlParameter("country" + suffix, Country));
-            cmd.Parameters.Add(new MySqlParameter("pin" + suffix, PIN));
+            cmd.Parameters.Add(new MySqlParameter("addres_type", AddressType));
+            cmd.Parameters.Add(new MySqlParameter("addres" , AddressLine));
+            cmd.Parameters.Add(new MySqlParameter("city", City));
+            cmd.Parameters.Add(new MySqlParameter("state" , State));
+            cmd.Parameters.Add(new MySqlParameter("country_code" , Country));
+            cmd.Parameters.Add(new MySqlParameter("pin" , PIN));
         }
     }
 }

@@ -39,11 +39,12 @@ namespace UserManagement.Models
             */
 
         }
-        public void BindParams(MySqlCommand cmd)
-        {
+        public void BindParams(MySqlCommand cmd) { 
+        
             cmd.Parameters.Add(new MySqlParameter("ph_num_type", ContactNumberType));
             cmd.Parameters.Add(new MySqlParameter("ph_number", Number));
             cmd.Parameters.Add(new MySqlParameter("ph_ext", AreaCode));
+            cmd.Parameters.Add(new MySqlParameter("country", CountryCode));
         }
     }
 }

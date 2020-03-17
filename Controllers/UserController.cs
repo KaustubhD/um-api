@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
@@ -32,10 +33,11 @@ namespace UserManagement.Controllers
         public IActionResult Post([FromBody]User item)
         {
             Db.Connection.Open();
+            //Console.WriteLine("------------" + item.FirstName + "----------------");
             item.Db = Db;
             var result = item.AddOneUser();
             Db.Connection.Close();
-            return new OkObjectResult(result);
+            return new OkObjectResult(item);
         }
 
         [HttpPost]
@@ -47,6 +49,30 @@ namespace UserManagement.Controllers
             body.AddAllUsers();
             Db.Connection.Close();
             return Ok();
+        }
+
+        [HttpPut]
+        [Route("{username}/update")]
+         public ActionResult Put(String username, [FromBody]User body)
+         {
+            Db.Connection.Open();
+            //var query = new User(Db);
+            //query.UpdateUser(username, body);
+            body.Db = Db;
+            body.UserName = username;
+            Console.WriteLine(body.FirstName);
+            var result = body.UpdateUser();
+            Db.Connection.Close();
+            return Ok(result);
+            //return Ok();
+
+
+            //body.Db = neDb;
+            //body.UserName = username;
+            //var result = body.UpdateUser(username,body);
+           
+            
+
         }
 
 

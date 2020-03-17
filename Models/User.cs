@@ -40,20 +40,38 @@ namespace UserManagement
         }
         public string AddOneUser()
         {
-            
-
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = "insert_user_data";
-            cmd.CommandType = CommandType.StoredProcedure;
-            BindAddProcParams(cmd);
-            MySqlParameter outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar)
+            MySqlParameter outputEmailParam;
+            try
             {
-                Direction = ParameterDirection.Output
-            };
-            cmd.Parameters.Add(outputEmailParam);
-            //cmd.Connection.Open();
-            cmd.ExecuteNonQuery();
-            //cmd.Connection.Close();
+
+                using var cmd = Db.Connection.CreateCommand();
+                cmd.CommandText = "insert_user";
+                cmd.CommandType = CommandType.StoredProcedure;
+                outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar) { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(outputEmailParam);
+                BindUsername(cmd);
+                BindUserProcParams(cmd);
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "insert_contact";
+                cmd.CommandType = CommandType.StoredProcedure;
+                BindContactProcParams(cmd);
+
+                cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "insert_address";
+                cmd.CommandType = CommandType.StoredProcedure;
+                BindAddressProcParams(cmd);
+                cmd.ExecuteNonQuery();
+
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+
+
+           
             return (string)outputEmailParam.Value;
 
         }
@@ -185,83 +203,82 @@ namespace UserManagement
                     post.phones.Add(AddContact(reader, "work"));
                     post.phones.Add(AddContact(reader, "home"));
 
-                    
+
                 }
             }
             return post;
         }
 
         /*
-        public void UpdateUser(String uname, User model)
+        public string UpdateUser()
         {
-            string[] names = model.name.Split(" ");
-            Console.WriteLine("----------" + names[0]);
-
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = @"update user set first_name=@f,middle_name=@m,last_name=@l where username=@u;";
-            cmd.Parameters.Add(new MySqlParameter("@f", names[0]));
-            cmd.Parameters.Add(new MySqlParameter("@u", uname));
-            var midName = new MySqlParameter("@m", DBNull.Value);
-
-            switch (names.Length)
+            MySqlParameter outputEmailParam;
+            try
             {
-                case 1:
-                    break;
-                case 2:
-                    cmd.Parameters.Add(new MySqlParameter("@l", names[1]));
-                    break;
-                case 3:
-                    midName.Value = names[1];
-                    cmd.Parameters.AddWithValue("@l", names[2]);
-                    break;
-                default:
-                    string mid = "";
-                    for (int i = 1; i < names.Length - 1; i++) { mid += names[i] + " "; }
-                    mid = mid.Remove(mid.LastIndexOf(" "), " ".Length).Insert(mid.LastIndexOf(" "), ""); // Remove last space
-                    cmd.Parameters.Add(new MySqlParameter("@m", mid));
-                    cmd.Parameters.AddWithValue("@l", names[names.Length - 1]);
-                    break;
-            }
-            cmd.Parameters.Add(midName);
-            cmd.ExecuteNonQuery();
 
-
-            cmd.CommandText = @"update contact_number c inner join user_to_contact using(contact_id) inner join user using(user_id) inner join contact_type using(contact_type_id) set number=@num where username=@u and contact_type=@typ";
-            var number = new MySqlParameter("@num", model.phones[0].Number);
-            var numberType = new MySqlParameter("@typ", model.phones[0].ContactNumberType);
-
-            cmd.Parameters.Add(number);
-            cmd.Parameters.Add(numberType);
-            cmd.ExecuteNonQuery();
-
-            if (!string.IsNullOrEmpty(model.phones[1].ContactNumberType))
-            {
-                number.Value = model.phones[1].Number;
-                numberType.Value = model.phones[1].ContactNumberType;
+                using var cmd = Db.Connection.CreateCommand();
+                cmd.CommandText = "update_user";
+                cmd.CommandType = CommandType.StoredProcedure;
+                outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar) { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(outputEmailParam);
+                BindUsername(cmd);
+                BindUserProcParams(cmd);
                 cmd.ExecuteNonQuery();
+
+                cmd.CommandText = "update_contact";
+                cmd.CommandType = CommandType.StoredProcedure;
+                var num_type = new MySqlParameter("ph_num_type", String.Empty);
+                var num = new MySqlParameter("ph_number", String.Empty);
+                var code = new MySqlParameter("ph_ext", String.Empty);
+                var c_code = new MySqlParameter("country", String.Empty);
+                
+                cmd.Parameters.Add(num_type);
+                cmd.Parameters.Add(num);
+                cmd.Parameters.Add(code);
+                cmd.Parameters.Add(c_code);
+
+                foreach (ContactNumberModel phone in phones)
+                {
+                    //phone.BindParams(cmd);
+                    num_type.Value = phone.ContactNumberType;
+                    num.Value = phone.Number;
+                    code.Value = phone.AreaCode;
+                    c_code.Value = phone.CountryCode;
+                    cmd.ExecuteNonQuery();
+                }   
+
+                cmd.CommandText = "update_address";
+                cmd.CommandType = CommandType.StoredProcedure;
+                var add_type = new MySqlParameter("addres_type", String.Empty);
+                var add = new MySqlParameter("addres", String.Empty);
+                var city = new MySqlParameter("", String.Empty);
+                var state = new MySqlParameter("", String.Empty);
+                var pin = new MySqlParameter("", String.Empty);
+                var c_code = new MySqlParameter("", String.Empty);
+
+                cmd.Parameters.Add(add_type);
+                cmd.Parameters.Add(add);
+                cmd.Parameters.Add(city);
+                cmd.Parameters.Add(state);
+                cmd.Parameters.Add(pin);
+                cmd.Parameters.Add(c_code);
+
+            }
+            catch (Exception e)
+            {
+                return e.Message;
             }
 
-            //string[] address = model.address.Split(",");
 
-            //string add = "";
-            cmd.CommandText = @"call update_address(@u,@address,@city,@state,@coun,@pin)";
 
-            cmd.Parameters.AddWithValue("@pin", model.addresses[0].PIN);
-            cmd.Parameters.AddWithValue("@state", model.address.State);
-            cmd.Parameters.AddWithValue("@city", model.address.City);
-            cmd.Parameters.AddWithValue("@coun", model.address.Country);
-
-            cmd.Parameters.AddWithValue("@address", model.address.AddressLine);
-            cmd.ExecuteNonQuery();
+            return (string)outputEmailParam.Value;
 
 
         }
-
+            
         */
 
-
-
-        private void BindAddProcParams(MySqlCommand cmd)
+        private void BindUserProcParams(MySqlCommand cmd)
         {
             cmd.Parameters.Add(new MySqlParameter("salut", Salutation));
             cmd.Parameters.Add(new MySqlParameter("f_name", FirstName));
@@ -270,24 +287,29 @@ namespace UserManagement
             cmd.Parameters.Add(new MySqlParameter("dept_name", DepartmentName));
             cmd.Parameters.Add(new MySqlParameter("desig", DesignationName));
             cmd.Parameters.Add(new MySqlParameter("email", (AltEmail == null || AltEmail == "") ? Email + "," + AltEmail : Email ));
-            cmd.Parameters.Add(new MySqlParameter("username", UserName));
             cmd.Parameters.Add(new MySqlParameter("pass", Password));
             cmd.Parameters.Add(new MySqlParameter("dob", DOB));
             cmd.Parameters.Add(new MySqlParameter("gend", Gender));
             cmd.Parameters.Add(new MySqlParameter("doj", DOJ));
-            foreach(ContactNumberModel phone in phones)
-            {
-                phone.BindParams(cmd);
-            }
+            cmd.Parameters.Add(new MySqlParameter("is_ac", 1));
 
+        }
+        private void BindContactProcParams(MySqlCommand cmd)
+        {
             foreach (ContactNumberModel phone in phones)
             {
                 phone.BindParams(cmd);
             }
-            addresses[0].BindParams(cmd);
-            addresses[1].BindParams(cmd, "2");
-            cmd.Parameters.Add(new MySqlParameter("is_ac", 1));
         }
+
+        private void BindAddressProcParams(MySqlCommand cmd)
+        {
+            foreach (AddressModel address in addresses)
+            {
+                address.BindParams(cmd);
+            }
+        }
+
         private void BindUsername(MySqlCommand cmd)
         {
             cmd.Parameters.Add(new MySqlParameter("username", UserName));
