@@ -7,7 +7,7 @@ namespace UserManagement.Models
     public class AssignmentModel : BaseEntity
     {
         public String name { get; set; }
-        public String? address { get; set; }
+        public AddressModel? address { get; set; }
         public AgePrams? currentCompanyExp { get; set; }
         public AssignmentContactModel? contactDetail {get; set; }
         public AgePrams? age { get; set; }
@@ -21,7 +21,7 @@ namespace UserManagement.Models
         {
             this.name = u.FirstName + (u.MiddleName != "" ? " " + u.MiddleName : "") + " " + u.LastName;
             this.isIndian = u.addresses[0].Country == "India";
-            this.address = u.addresses[0].AddressLine + "," + u.addresses[0].City + "," + u.addresses[0].State + "," + u.addresses[0].PIN;
+            this.address = u.addresses[0];
             this.contactDetail = new AssignmentContactModel()
             {
                 Primary = u.phones[0].Number,
@@ -101,18 +101,17 @@ namespace UserManagement.Models
                 cmd.ExecuteNonQuery();
             }
             
-            string[] address = model.address.Split(",");
+            //string[] address = model.address.Split(",");
 
-            string add = "";
-            cmd.CommandText = @"call update_address(@u,@address,@city,@state,'India',@pin)";
+            //string add = "";
+            cmd.CommandText = @"call update_address(@u,@address,@city,@state,@coun,@pin)";
 
-            cmd.Parameters.AddWithValue("@pin", address[address.Length - 1]);
-            cmd.Parameters.AddWithValue("@state", address[address.Length - 2]);
-            cmd.Parameters.AddWithValue("@city", address[address.Length - 3]);
-            for (int i = 0; i < address.Length - 3; i++) { add += address[i] + " "; }
-            add = add.Remove(add.LastIndexOf(" "), " ".Length).Insert(add.LastIndexOf(" "), ""); // Remove last space
-
-            cmd.Parameters.AddWithValue("@address", add);
+            cmd.Parameters.AddWithValue("@pin", model.address.PIN);
+            cmd.Parameters.AddWithValue("@state", model.address.State);
+            cmd.Parameters.AddWithValue("@city", model.address.City);
+            cmd.Parameters.AddWithValue("@coun", model.address.Country);
+            
+            cmd.Parameters.AddWithValue("@address", model.address.AddressLine);
             cmd.ExecuteNonQuery();
 
 
