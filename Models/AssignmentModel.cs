@@ -7,6 +7,7 @@ namespace UserManagement.Models
     public class AssignmentModel : BaseEntity
     {
         public String name { get; set; }
+        public String username { get; set; }
         public AddressModel? address { get; set; }
         public AgePrams? currentCompanyExp { get; set; }
         public AssignmentContactModel? contactDetail {get; set; }
@@ -20,6 +21,7 @@ namespace UserManagement.Models
         internal AssignmentModel(User u)
         {
             this.name = u.FirstName + (u.MiddleName != "" ? " " + u.MiddleName : "") + " " + u.LastName;
+            this.username = u.UserName;
             this.isIndian = u.addresses[0].Country == "India";
             this.address = u.addresses[0];
             this.contactDetail = new AssignmentContactModel()
