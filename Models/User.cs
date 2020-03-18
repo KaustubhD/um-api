@@ -130,7 +130,7 @@ namespace UserManagement
                     }
                 }
 
-                Console.WriteLine("An exception of type " + e.GetType() +
+                Console.WriteLine("An exception of type " + e.Message +
                 " was encountered while inserting the data.");
                 Console.WriteLine("Neither record was written to database.");
             }
@@ -370,7 +370,7 @@ namespace UserManagement
                     }
                 }
 
-                Console.WriteLine("An exception of type " + e.GetType() +
+                Console.WriteLine("An exception of type " + e.Message +
                 " was encountered while inserting the data.");
                 Console.WriteLine("Neither record was written to database.");
             }
@@ -398,9 +398,9 @@ namespace UserManagement
             cmd.Parameters.Add(new MySqlParameter("desig", DesignationName));
             cmd.Parameters.Add(new MySqlParameter("email", (AltEmail == null || AltEmail == "") ? Email + "," + AltEmail : Email ));
             cmd.Parameters.Add(new MySqlParameter("pass", Password));
-            cmd.Parameters.Add(new MySqlParameter("dob", DOB));
+            cmd.Parameters.Add(new MySqlParameter("dob", DateTime.Parse(DOB).ToString("yyyy-MM-dd")));
             cmd.Parameters.Add(new MySqlParameter("gend", Gender));
-            cmd.Parameters.Add(new MySqlParameter("doj", DOJ));
+            cmd.Parameters.Add(new MySqlParameter("doj", DateTime.Parse(DOJ).ToString("yyyy-MM-dd")));
             cmd.Parameters.Add(new MySqlParameter("is_ac", 1));
 
         }
