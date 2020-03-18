@@ -28,6 +28,17 @@ namespace UserManagement.Controllers
             return new OkObjectResult(result);
         }
 
+        [HttpGet]
+        [Route("{username}")]
+        public IActionResult GetOneUser(string username)
+        {
+            Db.Connection.Open();
+            var query = new User(Db);
+            var result = query.getUserByUsername(username);
+            Db.Connection.Close();
+            return Ok(result);
+        }
+
         [HttpPost]
         [Route("add")]
         public IActionResult Post([FromBody]User item)

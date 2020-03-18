@@ -210,14 +210,13 @@ namespace UserManagement
 
             return contact1;
         }
-
-        public User getUserById(int id)
+        
+        public User getUserByUsername(string username)
         {
             using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = "call get_user(@id)";
-            cmd.Parameters.AddWithValue("@id", id);
-            
-            cmd.ExecuteNonQuery();
+            cmd.CommandText = "get_user";
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@username", username);
             return ReadUser(cmd.ExecuteReader());
         }
         private List<User> ReadAll(MySqlDataReader reader)

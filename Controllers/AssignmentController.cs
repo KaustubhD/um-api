@@ -46,7 +46,7 @@ namespace UserManagement.Controllers
                 ContractResolver = new ShouldSerializeContractResolver()
             });
         }
-
+        
         [HttpGet]
         [Route("{id}")]
         public JsonResult Get(int id)
@@ -64,7 +64,7 @@ namespace UserManagement.Controllers
             });
             //return Ok(result);
         }
-
+        
         // POST: api/Assignment
         [HttpPost]
         public void Post([FromBody] string value)
