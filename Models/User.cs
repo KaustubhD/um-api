@@ -41,77 +41,112 @@ namespace UserManagement
         public string AddOneUser()
         {
             MySqlParameter outputEmailParam;
-            
-            using var cmd = Db.Connection.CreateCommand();
-            cmd.CommandText = "insert_user";
-            cmd.CommandType = CommandType.StoredProcedure;
-            outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar) { Direction = ParameterDirection.Output };
-            cmd.Parameters.Add(outputEmailParam);
-            BindUsername(cmd);
-            BindUserProcParams(cmd);
-            cmd.ExecuteNonQuery();
 
-            cmd.CommandText = "insert_contact";
-            cmd.CommandType = CommandType.StoredProcedure;
-            var num_type = new MySqlParameter("ph_num_type", String.Empty);
-            var num = new MySqlParameter("ph_number", String.Empty);
-            var code = new MySqlParameter("ph_ext", String.Empty);
-            var c_code = new MySqlParameter("country_code", String.Empty);
+            MySqlCommand cmd = Db.Connection.CreateCommand();
+            MySqlTransaction myTrans;
+            myTrans = Db.Connection.BeginTransaction();
 
-            cmd.Parameters.Add(num_type);
-            cmd.Parameters.Add(num);
-            cmd.Parameters.Add(code);
-            cmd.Parameters.Add(c_code);
-            Console.WriteLine("-----" + addresses.Count);
-            foreach (ContactNumberModel phone in phones)
+            cmd.Connection = Db.Connection;
+            cmd.Transaction = myTrans;
+
+            try
             {
-                //phone.BindParams(cmd);
-                num_type.Value = phone.ContactNumberType;
-                num.Value = phone.Number;
-                code.Value = phone.AreaCode;
-                c_code.Value = phone.CountryCode;
+                cmd.CommandText = "insert_user";
+                cmd.CommandType = CommandType.StoredProcedure;
+                outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar) { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(outputEmailParam);
+                BindUsername(cmd);
+                BindUserProcParams(cmd);
                 cmd.ExecuteNonQuery();
-            }
-            
 
-            // send new cmd to avoid complexity
-            cmd.CommandText = "insert_address";
-            cmd.CommandType = CommandType.StoredProcedure;
-            var add_type = new MySqlParameter("addres_type", String.Empty);
-            var add = new MySqlParameter("addres", String.Empty);
-            var city = new MySqlParameter("city", String.Empty);
-            var state = new MySqlParameter("state", String.Empty);
-            var pin = new MySqlParameter("pin", String.Empty);
-            var country = new MySqlParameter("country", String.Empty);
-            cmd.Parameters.Add(add_type);
-            cmd.Parameters.Add(add);
-            cmd.Parameters.Add(city);
-            cmd.Parameters.Add(state);
-            cmd.Parameters.Add(pin);
-            cmd.Parameters.Add(country);
-            Console.WriteLine(addresses.Count);
+                cmd.CommandText = "insert_contact";
+                cmd.CommandType = CommandType.StoredProcedure;
+                var num_type = new MySqlParameter("ph_num_type", String.Empty);
+                var num = new MySqlParameter("ph_number", String.Empty);
+                var code = new MySqlParameter("ph_ext", String.Empty);
+                var c_code = new MySqlParameter("country_code", String.Empty);
+
+                cmd.Parameters.Add(num_type);
+                cmd.Parameters.Add(num);
+                cmd.Parameters.Add(code);
+                cmd.Parameters.Add(c_code);
+                Console.WriteLine("-----" + addresses.Count);
+                foreach (ContactNumberModel phone in phones)
+                {
+                    //phone.BindParams(cmd);
+                    num_type.Value = phone.ContactNumberType;
+                    num.Value = phone.Number;
+                    code.Value = phone.AreaCode;
+                    c_code.Value = phone.CountryCode;
+                    cmd.ExecuteNonQuery();
+                }
+
+
+                // send new cmd to avoid complexity
+                cmd.CommandText = "insert_address";
+                cmd.CommandType = CommandType.StoredProcedure;
+                var add_type = new MySqlParameter("addres_type", String.Empty);
+                var add = new MySqlParameter("addres", String.Empty);
+                var city = new MySqlParameter("city", String.Empty);
+                var state = new MySqlParameter("state", String.Empty);
+                var pin = new MySqlParameter("pin", String.Empty);
+                var country = new MySqlParameter("country", String.Empty);
+                cmd.Parameters.Add(add_type);
+                cmd.Parameters.Add(add);
+                cmd.Parameters.Add(city);
+                cmd.Parameters.Add(state);
+                cmd.Parameters.Add(pin);
+                cmd.Parameters.Add(country);
+                Console.WriteLine(addresses.Count);
                 foreach (AddressModel address in addresses)
-            {
+                {
                     Console.WriteLine(address.AddressType + address.AddressLine + address.City + address.State + address.Country + address.PIN);
-                add_type.Value = address.AddressType;
-                add.Value = address.AddressLine;
-                city.Value = address.City;
-                state.Value = address.State;
-                country.Value = address.Country;
-                pin.Value = address.PIN;
-                cmd.ExecuteNonQuery();
-            
+                    add_type.Value = address.AddressType;
+                    add.Value = address.AddressLine;
+                    city.Value = address.City;
+                    state.Value = address.State;
+                    country.Value = address.Country;
+                    pin.Value = address.PIN;
+                    cmd.ExecuteNonQuery();
 
-        }
-        /*
+
+                }
+                myTrans.Commit();
+                Console.WriteLine("Both records are written to database.");
+                return "User inserted";
+            }
             catch (Exception e)
             {
-                return e.Message;
-            }
-            */
+                try
+                {
+                    myTrans.Rollback();
+                }
+                catch (MySqlException ex)
+                {
+                    if (myTrans.Connection != null)
+                    {
+                        Console.WriteLine("An exception of type " + ex.GetType() +
+                        " was encountered while attempting to roll back the transaction.");
+                    }
+                }
 
-           
-            return "vervjhdvc";
+                Console.WriteLine("An exception of type " + e.GetType() +
+                " was encountered while inserting the data.");
+                Console.WriteLine("Neither record was written to database.");
+            }
+            finally
+            {
+                Db.Connection.Close();
+            }
+            /*
+                catch (Exception e)
+                {
+                    return e.Message;
+                }
+                */
+
+
+            return "0";
 
         }
 
@@ -252,10 +287,15 @@ namespace UserManagement
         public string UpdateUser()
         {
             MySqlParameter outputEmailParam;
-            try
-            {
 
-                using var cmd = Db.Connection.CreateCommand();
+            MySqlCommand cmd = Db.Connection.CreateCommand();
+            MySqlTransaction myTrans;
+
+            myTrans = Db.Connection.BeginTransaction();
+            cmd.Connection = Db.Connection;
+            cmd.Transaction = myTrans;
+
+            try {
                 cmd.CommandText = "update_user";
                 cmd.CommandType = CommandType.StoredProcedure;
                 outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar) { Direction = ParameterDirection.Output };
@@ -311,17 +351,37 @@ namespace UserManagement
                     pin.Value = address.PIN;
                     cmd.ExecuteNonQuery();
                 }
-                
-
+                myTrans.Commit();
+                Console.WriteLine("Record Updated");
+                return "Record Updated";
             }
             catch (Exception e)
             {
-                return e.Message;
+                try
+                {
+                    myTrans.Rollback();
+                }
+                catch (MySqlException ex)
+                {
+                    if (myTrans.Connection != null)
+                    {
+                        Console.WriteLine("An exception of type " + ex.GetType() +
+                        " was encountered while attempting to roll back the transaction.");
+                    }
+                }
+
+                Console.WriteLine("An exception of type " + e.GetType() +
+                " was encountered while inserting the data.");
+                Console.WriteLine("Neither record was written to database.");
+            }
+            finally
+            {
+                Db.Connection.Close();
             }
 
 
 
-            return (string)outputEmailParam.Value;
+            return "Update failed";
 
 
         }
