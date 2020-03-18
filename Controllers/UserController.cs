@@ -75,17 +75,8 @@ namespace UserManagement.Controllers
             var result = body.UpdateUser();
             Db.Connection.Close();
             return Ok(result);
-            //return Ok();
-
-
-            //body.Db = neDb;
-            //body.UserName = username;
-            //var result = body.UpdateUser(username,body);
-           
-            
-
+        
         }
-
 
 
         [HttpPut]
@@ -107,11 +98,7 @@ namespace UserManagement.Controllers
             Db.Connection.Open();
             User query = new User(Db);
             query.UserName = username;
-            /*
-            var result = await query.FindOneAsync(username);
-            if (!result)
-                return new NotFoundResult();
-            */
+
             query.Delete();
             Db.Connection.Close();
             return new OkResult();

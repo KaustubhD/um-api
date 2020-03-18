@@ -403,6 +403,7 @@ namespace UserManagement
             cmd.Parameters.Add(new MySqlParameter("is_ac", 1));
 
         }
+       /*
         private void BindContactProcParams(MySqlCommand cmd)
         {
             foreach (ContactNumberModel phone in phones)
@@ -417,7 +418,7 @@ namespace UserManagement
             {
                 address.BindParams(cmd);
             }
-        }
+        }*/
 
         private void BindUsername(MySqlCommand cmd)
         {
