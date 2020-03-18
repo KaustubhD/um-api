@@ -41,38 +41,77 @@ namespace UserManagement
         public string AddOneUser()
         {
             MySqlParameter outputEmailParam;
-            try
+            
+            using var cmd = Db.Connection.CreateCommand();
+            cmd.CommandText = "insert_user";
+            cmd.CommandType = CommandType.StoredProcedure;
+            outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar) { Direction = ParameterDirection.Output };
+            cmd.Parameters.Add(outputEmailParam);
+            BindUsername(cmd);
+            BindUserProcParams(cmd);
+            cmd.ExecuteNonQuery();
+
+            cmd.CommandText = "insert_contact";
+            cmd.CommandType = CommandType.StoredProcedure;
+            var num_type = new MySqlParameter("ph_num_type", String.Empty);
+            var num = new MySqlParameter("ph_number", String.Empty);
+            var code = new MySqlParameter("ph_ext", String.Empty);
+            var c_code = new MySqlParameter("country_code", String.Empty);
+
+            cmd.Parameters.Add(num_type);
+            cmd.Parameters.Add(num);
+            cmd.Parameters.Add(code);
+            cmd.Parameters.Add(c_code);
+            Console.WriteLine("-----" + addresses.Count);
+            foreach (ContactNumberModel phone in phones)
             {
-
-                using var cmd = Db.Connection.CreateCommand();
-                cmd.CommandText = "insert_user";
-                cmd.CommandType = CommandType.StoredProcedure;
-                outputEmailParam = new MySqlParameter("@username_out", SqlDbType.VarChar) { Direction = ParameterDirection.Output };
-                cmd.Parameters.Add(outputEmailParam);
-                BindUsername(cmd);
-                BindUserProcParams(cmd);
+                //phone.BindParams(cmd);
+                num_type.Value = phone.ContactNumberType;
+                num.Value = phone.Number;
+                code.Value = phone.AreaCode;
+                c_code.Value = phone.CountryCode;
                 cmd.ExecuteNonQuery();
-
-                cmd.CommandText = "insert_contact";
-                cmd.CommandType = CommandType.StoredProcedure;
-                BindContactProcParams(cmd);
-
-                cmd.ExecuteNonQuery();
-
-                cmd.CommandText = "insert_address";
-                cmd.CommandType = CommandType.StoredProcedure;
-                BindAddressProcParams(cmd);
-                cmd.ExecuteNonQuery();
-
             }
+            
+
+            // send new cmd to avoid complexity
+            cmd.CommandText = "insert_address";
+            cmd.CommandType = CommandType.StoredProcedure;
+            var add_type = new MySqlParameter("addres_type", String.Empty);
+            var add = new MySqlParameter("addres", String.Empty);
+            var city = new MySqlParameter("city", String.Empty);
+            var state = new MySqlParameter("state", String.Empty);
+            var pin = new MySqlParameter("pin", String.Empty);
+            var country = new MySqlParameter("country", String.Empty);
+            cmd.Parameters.Add(add_type);
+            cmd.Parameters.Add(add);
+            cmd.Parameters.Add(city);
+            cmd.Parameters.Add(state);
+            cmd.Parameters.Add(pin);
+            cmd.Parameters.Add(country);
+            Console.WriteLine(addresses.Count);
+                foreach (AddressModel address in addresses)
+            {
+                    Console.WriteLine(address.AddressType + address.AddressLine + address.City + address.State + address.Country + address.PIN);
+                add_type.Value = address.AddressType;
+                add.Value = address.AddressLine;
+                city.Value = address.City;
+                state.Value = address.State;
+                country.Value = address.Country;
+                pin.Value = address.PIN;
+                cmd.ExecuteNonQuery();
+            
+
+        }
+        /*
             catch (Exception e)
             {
                 return e.Message;
             }
-
+            */
 
            
-            return (string)outputEmailParam.Value;
+            return "vervjhdvc";
 
         }
 
@@ -209,7 +248,7 @@ namespace UserManagement
             return post;
         }
 
-        /*
+       
         public string UpdateUser()
         {
             MySqlParameter outputEmailParam;
@@ -230,7 +269,7 @@ namespace UserManagement
                 var num_type = new MySqlParameter("ph_num_type", String.Empty);
                 var num = new MySqlParameter("ph_number", String.Empty);
                 var code = new MySqlParameter("ph_ext", String.Empty);
-                var c_code = new MySqlParameter("country", String.Empty);
+                var c_code = new MySqlParameter("country_code", String.Empty);
                 
                 cmd.Parameters.Add(num_type);
                 cmd.Parameters.Add(num);
@@ -246,22 +285,33 @@ namespace UserManagement
                     c_code.Value = phone.CountryCode;
                     cmd.ExecuteNonQuery();
                 }   
-
+                // send new cmd to avoid complexity
                 cmd.CommandText = "update_address";
                 cmd.CommandType = CommandType.StoredProcedure;
                 var add_type = new MySqlParameter("addres_type", String.Empty);
                 var add = new MySqlParameter("addres", String.Empty);
-                var city = new MySqlParameter("", String.Empty);
-                var state = new MySqlParameter("", String.Empty);
-                var pin = new MySqlParameter("", String.Empty);
-                var c_code = new MySqlParameter("", String.Empty);
-
+                var city = new MySqlParameter("city", String.Empty);
+                var state = new MySqlParameter("state", String.Empty);
+                var pin = new MySqlParameter("pin", String.Empty);
+                var country = new MySqlParameter("country", String.Empty);
                 cmd.Parameters.Add(add_type);
-                cmd.Parameters.Add(add);
-                cmd.Parameters.Add(city);
-                cmd.Parameters.Add(state);
-                cmd.Parameters.Add(pin);
-                cmd.Parameters.Add(c_code);
+                    cmd.Parameters.Add(add);
+                    cmd.Parameters.Add(city);
+                    cmd.Parameters.Add(state);
+                    cmd.Parameters.Add(pin);
+                cmd.Parameters.Add(country);
+
+                foreach (AddressModel address in addresses)
+                {
+                    add_type.Value = address.AddressType;
+                    add.Value = address.AddressLine;
+                    city.Value = address.City;
+                    state.Value = address.State;
+                    country.Value = address.Country;
+                    pin.Value = address.PIN;
+                    cmd.ExecuteNonQuery();
+                }
+                
 
             }
             catch (Exception e)
@@ -276,7 +326,7 @@ namespace UserManagement
 
         }
             
-        */
+        
 
         private void BindUserProcParams(MySqlCommand cmd)
         {

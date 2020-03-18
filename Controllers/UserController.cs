@@ -33,7 +33,7 @@ namespace UserManagement.Controllers
         public IActionResult Post([FromBody]User item)
         {
             Db.Connection.Open();
-            //Console.WriteLine("------------" + item.FirstName + "----------------");
+            Console.WriteLine("------------" + item.addresses[0].AddressLine + "----------------");
             item.Db = Db;
             var result = item.AddOneUser();
             Db.Connection.Close();
