@@ -22,7 +22,6 @@ namespace UserManagement.Controllers
             Db = db;
         }
 
-        // GET: api/Assignment
         [HttpGet]
         public JsonResult GetAll()
         {
@@ -30,9 +29,6 @@ namespace UserManagement.Controllers
             string namesToSearch = String.Empty;
             if (!string.IsNullOrEmpty(HttpContext.Request.Query["search"]))
                 namesToSearch = HttpContext.Request.Query["search"];
-   
-            //Console.WriteLine("-----------" + (HttpContext.Request.Query["search"] == null) + "------------");
-            //Console.WriteLine("-----------" + (HttpContext.Request.Query["search"] == null) + "------------");
             Db.Connection.Open();
             var query = new AssignmentModel(Db);
             var result = query.getAllUsersInCustomFormat(namesToSearch);
@@ -62,16 +58,13 @@ namespace UserManagement.Controllers
             {
                 ContractResolver = new ShouldSerializeContractResolver()
             });
-            //return Ok(result);
         }
         
-        // POST: api/Assignment
         [HttpPost]
         public void Post([FromBody] string value)
         {
         }
 
-        // PUT: api/Assignment/5
         [HttpPut("{username}")]
         public ActionResult Put(String username, [FromBody]AssignmentModel body)
         {
@@ -82,7 +75,6 @@ namespace UserManagement.Controllers
             return Ok();
         }
 
-        // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
 
         public void Delete(int id)

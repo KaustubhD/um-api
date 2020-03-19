@@ -23,7 +23,7 @@ namespace UserManagement.Utilities
                 {
                     property.ShouldSerialize = instance =>
                     {
-                        var p = (AssignmentModel)instance;
+                        var p = (User)instance;
                         return p.serializableProperties.Contains(property.PropertyName);
                     };
                 }

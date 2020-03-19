@@ -25,26 +25,21 @@ namespace UserManagement.Models
         {
             Db = db;
         }
-        public async Task AddContactNumber(int id)
+        public void BindAndExecuteProcedure(MySqlCommand cmd, string ProcedureName)
         {
-            /*
-            ------- No Query written
-            
-            using (var cmd = Db.Connection.CreateCommand()){
-                cmd.CommandText = @"SELECT f_name, m_name, l_name from users where username=@uname and password=@pass";
-                BindParams(cmd);
-                var result =  await ReadAllAsync(await cmd.ExecuteReaderAsync());
-                return result.Count > 0 ? result : null;
-            }
-            */
-
+            cmd.CommandText = ProcedureName;
+            cmd.CommandType = CommandType.StoredProcedure;
+            BindParams(cmd);
+            cmd.ExecuteNonQuery();
+            cmd.Parameters.Clear();
         }
+
         public void BindParams(MySqlCommand cmd) { 
         
             cmd.Parameters.Add(new MySqlParameter("ph_num_type", ContactNumberType));
             cmd.Parameters.Add(new MySqlParameter("ph_number", Number));
             cmd.Parameters.Add(new MySqlParameter("ph_ext", AreaCode));
-            cmd.Parameters.Add(new MySqlParameter("country", CountryCode));
+            cmd.Parameters.Add(new MySqlParameter("country_code", CountryCode));
         }
     }
 }

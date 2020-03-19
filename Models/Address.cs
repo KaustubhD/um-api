@@ -14,7 +14,6 @@ namespace UserManagement.Models
         public string State { get; set; }
         public string Country { get; set; }
         public string PIN { get; set; }
-
         internal AppDb Db { get; set; }
 
         public AddressModel()
@@ -25,26 +24,23 @@ namespace UserManagement.Models
         {
             Db = db;
         }
-        public async Task AddAddress(int id)
-        {   
-            /*
-            -----  No query written
-            using (var cmd = Db.Connection.CreateCommand()){
-                cmd.CommandText = @"SELECT f_name, m_name, l_name from users where username=@uname and password=@pass";
-                BindParams(cmd);
-                var result =  await ReadAllAsync(await cmd.ExecuteReaderAsync());
-                return result.Count > 0 ? result : null;
-            }
-            */
 
+        public void BindAndExecuteProcedure(MySqlCommand cmd, string ProcedureName)
+        {
+            cmd.CommandText = ProcedureName;
+            cmd.CommandType = CommandType.StoredProcedure;
+            BindParams(cmd);
+            cmd.ExecuteNonQuery();
+            cmd.Parameters.Clear();
         }
+
         public void BindParams(MySqlCommand cmd)
         {
             cmd.Parameters.Add(new MySqlParameter("addres_type", AddressType));
             cmd.Parameters.Add(new MySqlParameter("addres" , AddressLine));
             cmd.Parameters.Add(new MySqlParameter("city", City));
             cmd.Parameters.Add(new MySqlParameter("state" , State));
-            cmd.Parameters.Add(new MySqlParameter("country_code" , Country));
+            cmd.Parameters.Add(new MySqlParameter("country" , Country));
             cmd.Parameters.Add(new MySqlParameter("pin" , PIN));
         }
     }

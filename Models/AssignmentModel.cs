@@ -51,8 +51,6 @@ namespace UserManagement.Models
         }
         public AssignmentModel getUserInCustomFormat(int id)
         {
-            // var user = new User(Db).getUserById(id);
-            //return new AssignmentModel(user);
             return new AssignmentModel();
 
         }
