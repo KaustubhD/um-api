@@ -189,8 +189,8 @@ namespace UserManagement
                     post.DesignationName = GetSafeString(reader, "designation_name");
                     post.Email = GetSafeString(reader, "email");
                     post.Gender = GetSafeString(reader, "gender");
-                    post.DOB = Convert.ToDateTime(reader["date_of_birth"]).ToString("dd/MM/yyyy");
-                    post.DOJ = Convert.ToDateTime(reader["date_of_joining"]).ToString("dd/MM/yyyy");
+                    post.DOB = Convert.ToDateTime(reader["date_of_birth"]).ToString("yyyy-MM-dd");
+                    post.DOJ = Convert.ToDateTime(reader["date_of_joining"]).ToString("yyyy-MM-dd");
                     post.addresses.Add(ReadAddress(reader, "current"));
                     post.addresses.Add(ReadAddress(reader, "permanant"));
                     post.phones.Add(ReadContact(reader,"mobile"));

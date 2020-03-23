@@ -10,6 +10,17 @@ namespace UserManagement.Utilities
     public class ShouldSerializeContractResolver : DefaultContractResolver
     {
 
+        /*public ShouldSerializeContractResolver() : base()
+        {
+            NamingStrategy = new CamelCaseNamingStrategy();
+            // {
+            //     ProcessDictionaryKeys = true,
+            //     OverrideSpecifiedNames = true
+            // };
+        }*/
+
+
+
         protected override JsonProperty CreateProperty(System.Reflection.MemberInfo member, Newtonsoft.Json.MemberSerialization memberSerialization)
         {
             var property = base.CreateProperty(member, memberSerialization);
